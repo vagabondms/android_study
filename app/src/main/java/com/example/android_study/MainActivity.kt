@@ -8,8 +8,10 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 
 private const val TAG = "MainActivity"
+private const val KEY_INDEX = "index"
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,19 +21,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previousButton: ImageButton
     private lateinit var questionTextView: TextView
 
-    private val questionBank = listOf(
-        Question(R.string.question_australia, true),
-        Question(R.string.question_oceans, true),
-        Question(R.string.question_mideast, false),
-        Question(R.string.question_africa, false),
-        Question(R.string.question_americas, true),
-        Question(R.string.question_asia, true))
-    private var currentIndex = 0
-    private var disabled = false
+    private val quizViewModel: QuizViewModel by lazy {
+        Log.d(TAG, "quizViewModel initialized")
+
+        ViewModelProvider(this).get(QuizViewModel::class.java)
+    }
+
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        Log.d(TAG, "onSaveInstanceState")
+        savedInstanceState.putInt(KEY_INDEX, quizViewModel.currentIndex)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate(Bunde?) called")
+        Log.d(TAG, "onCreateCalled")
+
+        quizViewModel.currentIndex = savedInstanceState?.getInt(KEY_INDEX) ?: 0
+
         setContentView(R.layout.activity_main)
 
         trueButton = findViewById(R.id.true_button)
@@ -50,12 +57,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         nextButton.setOnClickListener {
-            currentIndex = (currentIndex + 1) % questionBank.size
+            quizViewModel.moveForward()
             updateQuestion()
         }
 
         previousButton.setOnClickListener {
-            currentIndex = (currentIndex - 1) % questionBank.size
+            quizViewModel.moveBackward()
             updateQuestion()
         }
 
@@ -89,32 +96,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateQuestion() {
-        val question = questionBank[currentIndex]
-        questionTextView.setText(question.textResId)
-        disabled = question.right
+        questionTextView.setText(quizViewModel.currentQuestionText)
+        quizViewModel.enableButton(quizViewModel.currentQuestionResult)
     }
-
-    private fun updateButtonStatus(enable: Boolean){
-        trueButton.isEnabled = enable
-        falseButton.isEnabled = enable
-    }
-
 
     private fun checkAnswer(userAnswer: Boolean) {
-        val correctAnswer = questionBank[currentIndex].answer
 
-
-        val messageResId = when(userAnswer == correctAnswer) {
+        val messageResId = when (userAnswer == quizViewModel.currentQuestionAnswer) {
             true -> {
-                questionBank[currentIndex].right  = true
+                quizViewModel.updateCurrentQuestionResult(true)
                 updateQuestion()
-                updateButtonStatus(!disabled)
+                quizViewModel.enableButton(false)
                 R.string.correct_toast
             }
             false -> {
-                questionBank[currentIndex].right  = false
+                quizViewModel.updateCurrentQuestionResult(false)
                 updateQuestion()
-                updateButtonStatus(!disabled)
+                quizViewModel.enableButton(true)
                 R.string.incorrect_toast
             }
         }
