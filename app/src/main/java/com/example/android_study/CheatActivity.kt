@@ -10,8 +10,11 @@ import android.widget.TextView
 
 const val EXTRA_ANSWER_SHOWN = "com.example.android_study.answer_shown"
 private const val EXTRA_ANSWER_IS_TRUE = "com.example.android_study.answer_is_true"
+private const val KEY_IS_CHEATER = "isCheater"
 
 class CheatActivity : AppCompatActivity() {
+
+    private var isShown = false
 
     private val answerIsTrue by lazy {
         intent.getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false)
@@ -29,19 +32,39 @@ class CheatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cheat)
 
+        isShown = savedInstanceState?.getBoolean(KEY_IS_CHEATER) ?: false
+
+
+        when {
+            isShown -> {
+                val answerText = when {
+                    answerIsTrue -> R.string.true_button
+                    else -> R.string.false_button
+                }
+                answerTextView.setText(answerText)
+                setAnswerShownResult(true)
+            }
+        }
+
         showAnswerButton.setOnClickListener {
             val answerText = when {
                 answerIsTrue -> R.string.true_button
                 else -> R.string.false_button
             }
             answerTextView.setText(answerText)
+            isShown = true
             setAnswerShownResult(true)
         }
-
-
     }
 
-    private fun setAnswerShownResult(isAnswerShown: Boolean){
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.apply {
+            putBoolean(KEY_IS_CHEATER, isShown)
+        }
+    }
+
+    private fun setAnswerShownResult(isAnswerShown: Boolean) {
         val data = Intent().apply {
             putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown)
         }

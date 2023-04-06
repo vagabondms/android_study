@@ -34,14 +34,15 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
         Log.d(TAG, "onSaveInstanceState")
-        savedInstanceState.putInt(KEY_INDEX, quizViewModel.currentIndex)
+        savedInstanceState.apply {
+            putInt(KEY_INDEX, quizViewModel.currentIndex)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreateCalled")
 
-        quizViewModel.currentIndex = savedInstanceState?.getInt(KEY_INDEX) ?: 0
 
         setContentView(R.layout.activity_main)
 
@@ -89,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 
         when (requestCode) {
             REQUEST_CODE_CHEAT -> {
-                quizViewModel.isCheater = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+                quizViewModel.currentQuestionIsCheated = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
             }
         }
 
@@ -127,8 +128,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkAnswer(userAnswer: Boolean) {
 
-        val messageResId = when (userAnswer == quizViewModel.currentQuestionAnswer) {
-            quizViewModel.isCheater -> R.string.judgement_toast
+        val messageResId = when {
+            quizViewModel.currentQuestionIsCheated -> R.string.judgement_toast
 
             (userAnswer == quizViewModel.currentQuestionAnswer) -> {
                 quizViewModel.updateCurrentQuestionResult(true)
