@@ -17,6 +17,10 @@ class QuizViewModel : ViewModel() {
         Question(R.string.question_asia, true))
     private var disabled = false
     var currentIndex = 0
+    private var chanceLeft = 3
+
+    val chance: Boolean
+    get() = chanceLeft > 0
 
 
     val currentQuestionAnswer: Boolean
@@ -39,6 +43,9 @@ class QuizViewModel : ViewModel() {
         Log.d(TAG, "quizeViewMOdel")
     }
 
+    fun removeChance(){
+        chanceLeft -= 1
+    }
 
     fun updateCurrentQuestionResult(value: Boolean){
         questionBank[currentIndex].right = value
