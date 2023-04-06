@@ -3,6 +3,7 @@ package com.example.android_study
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -28,6 +29,10 @@ class CheatActivity : AppCompatActivity() {
         findViewById<Button>(R.id.show_answer_button)
     }
 
+    private val apiLevelTextView by lazy {
+        findViewById<TextView>(R.id.api_level)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cheat)
@@ -45,6 +50,10 @@ class CheatActivity : AppCompatActivity() {
                 setAnswerShownResult(true)
             }
         }
+
+        val text = getString(R.string.api_level, Build.VERSION.SDK_INT.toString())
+
+        apiLevelTextView.text = text
 
         showAnswerButton.setOnClickListener {
             val answerText = when {
